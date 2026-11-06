@@ -22,5 +22,5 @@
    "name": "Start Page - Date and Time",
    "permissions": [ "storage", "bookmarks", "contextMenus", "favicon" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "0.2.2"
+   "version": "0.2.3"
 }
