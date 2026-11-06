@@ -36,7 +36,7 @@ const bing = {
 };
 
 const bookmarks = {
-  id: typeof InstallTrigger === 'undefined' ? '1' : 'toolbar_____',
+  legacyId: typeof InstallTrigger === 'undefined' ? '1' : 'toolbar_____',
   favicon: (url, img) => {
     img.src = `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(url)}&size=32`;
   },
@@ -51,9 +51,38 @@ const bookmarks = {
     $.header.parent.appendChild(node);
     return node;
   },
-  bar: id => new Promise(resolve => {
-    chrome.bookmarks.getSubTree(id || bookmarks.id, ([e]) => resolve(e.children));
+  bars: () => new Promise((resolve, reject) => {
+    chrome.bookmarks.getTree(tree => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+
+      const nodes = [];
+      const visit = node => {
+        nodes.push(node);
+        (node.children || []).forEach(visit);
+      };
+      (tree || []).forEach(visit);
+
+      // Chrome 134+ identifies permanent folders by their purpose instead of
+      // requiring extensions to rely on a profile-specific numeric ID.
+      const bars = nodes.filter(node => node.folderType === 'bookmarks-bar');
+      const legacyBar = nodes.find(node => node.id === bookmarks.legacyId);
+      resolve(bars.length ? bars : (legacyBar ? [legacyBar] : []));
+    });
   }),
+  current: () => bookmarks.bars().then(bars => {
+    // Prefer the account-backed bar when both account and local trees exist.
+    const bar = bars.find(node => node.syncing) || bars[0];
+    if (!bar) {
+      throw new Error('Bookmarks bar was not found');
+    }
+    return bar;
+  }),
+  bar: () => bookmarks.current().then(bar => bar.children || []),
+  parent: () => bookmarks.current().then(bar => bar.id),
   build: () => {
     chrome.storage.local.get({
       favicon: true
@@ -65,20 +94,27 @@ const bookmarks = {
       bookmarks.bar().then(entries => entries
         // filter folders
         .filter(e => !e.children)
-        .filter(e => e.url.indexOf('://') !== -1)
-        .forEach(e => {
-          console.log(e);
-          bookmarks.add(e);
-        }));
+        .filter(e => typeof e.url === 'string' && e.url.indexOf('://') !== -1)
+        .forEach(bookmarks.add))
+        .catch(error => console.error('Cannot load bookmarks:', error));
     });
   },
-  insert: ({id, title, url}) => new Promise(resolve => {
-    chrome.bookmarks.create({
-      parentId: id || bookmarks.id,
-      title,
-      url
-    }, resolve);
-  }),
+  insert: ({id, title, url}) => (id ? Promise.resolve(id) : bookmarks.parent())
+    .then(parentId => new Promise((resolve, reject) => {
+      chrome.bookmarks.create({
+        parentId,
+        title,
+        url
+      }, node => {
+        const error = chrome.runtime.lastError;
+        if (error) {
+          reject(new Error(error.message));
+        }
+        else {
+          resolve(node);
+        }
+      });
+    })),
   remove: id => new Promise(resolve => {
     chrome.bookmarks.remove(id, resolve);
   })
