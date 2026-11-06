@@ -1,0 +1,26 @@
+{
+   "background": {
+      "service_worker": "worker.js"
+   },
+   "chrome_url_overrides": {
+      "newtab": "data/override/index.html"
+   },
+   "description": "Displays the current date and time with Bing's daily wallpaper on new tabs, with an optional weather widget",
+   "homepage_url": "https://webextension.org/listing/new-tab.html?from=date",
+   "host_permissions": [ "*://api.openweathermap.org/*", "*://www.bing.com//HPImageArchive.aspx?*" ],
+   "icons": {
+      "128": "data/icons/128.png",
+      "16": "data/icons/16.png",
+      "256": "data/icons/256.png",
+      "32": "data/icons/32.png",
+      "48": "data/icons/48.png",
+      "512": "data/icons/512.png",
+      "64": "data/icons/64.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7U8AQTslSpDSBqBTAAk5g72YRVIXfhnj/kTU3LTHAHWXC7PjL99GoCNDyeklpAMMaZ9gugYKb8qIq6z11frjCPgB1BCWQRX0wuiqwXwVi+BVlHRMuVUeAIvoddDywtqgLEEywuTVAvwEztRKPP9j3y6jYVOeZp+v4KVwDhYnSFc+CJadKbeKDQRSsSxqXeLK/72sSSAaMrw8+iZmFaz8eSiZP7h3OdQD1iKSEfbPhCukxOzux+Qg+QroLKWue3RiSV115/LrjD/WHvLVQnDOQUvjgBzS4AKbvY7r6thfIRSArlsRr9wm1xK0tCjJkPtN0kZhFg1NhJghVeo8W6+FJwIDAQAB",
+   "manifest_version": 3,
+   "name": "Start Page - Date and Time",
+   "permissions": [ "storage", "bookmarks", "contextMenus", "favicon" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "0.2.2"
+}

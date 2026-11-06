@@ -1,20 +1,19 @@
 'use strict';
 
-document.addEventListener('DOMContentLoaded', () => document.body.dataset.ready = true);
+window.addEventListener('load', () => document.body.dataset.ready = true);
 
-var $ = {
+const $ = {
   body: document.body,
   header: {
-    parent: document.querySelector('header'),
+    parent: document.querySelector('header>div'),
     a: document.querySelector('header>a'),
-    template: document.querySelector('header>template'),
-    spacer: document.querySelector('header [data-id=spacer]')
+    template: document.querySelector('header>template')
   },
   time: document.getElementById('time'),
   date: document.getElementById('date')
 };
 
-var cookie = {
+const cookie = {
   get: name => {
     try {
       return document.cookie.split(name + '=')[1].split(';').shift();
@@ -24,7 +23,7 @@ var cookie = {
   set: (name, value) => document.cookie = `${name}=${value}`
 };
 
-var bing = {
+const bing = {
   url: (lc = 'en-US') => {
     const base = 'http://www.bing.com';
     return fetch(base + '/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=' + lc)
@@ -36,44 +35,42 @@ var bing = {
   }
 };
 
-var bookmarks = {
+const bookmarks = {
   id: typeof InstallTrigger === 'undefined' ? '1' : 'toolbar_____',
-  favicon: url => {
-    if (typeof InstallTrigger === 'undefined') {
-      return 'chrome://favicon/' + url;
-    }
-    else {
-      // temporary solution until nsIFaviconService is supported
-      if (localStorage.getItem('favicon') !== 'false') {
-        return 'http://www.google.com/s2/favicons?domain_url=' + url;
-      }
-      else {
-        return 'web.svg';
-      }
-    }
+  favicon: (url, img) => {
+    img.src = `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(url)}&size=32`;
   },
-  add: ({title, url, id}) => {
+  add: e => {
+    const {title, url, id} = e;
     const node = document.importNode($.header.template.content, true);
     const a = node.querySelector('a');
     a.href = url;
     a.dataset.id = id;
-    node.querySelector('span').textContent = title;
-    node.querySelector('img').src = bookmarks.favicon(url);
-    $.header.parent.insertBefore(node, $.header.spacer);
+    node.querySelector('span').title = node.querySelector('span').textContent = title.trim();
+    bookmarks.favicon(url, node.querySelector('img'));
+    $.header.parent.appendChild(node);
     return node;
   },
   bar: id => new Promise(resolve => {
     chrome.bookmarks.getSubTree(id || bookmarks.id, ([e]) => resolve(e.children));
   }),
   build: () => {
-    [...$.header.parent.querySelectorAll('a')]
-      .filter(a => a.dataset.id !== 'apps' && a.dataset.id !== 'sidebar')
-      .forEach(a => a.remove());
-    bookmarks.bar().then(entries => entries
-      // filter folders
-      .filter(e => !e.children)
-      .filter(e => e.url.indexOf('://') !== -1)
-      .forEach(bookmarks.add));
+    chrome.storage.local.get({
+      favicon: true
+    }, prefs => {
+      bookmarks.remote = prefs.favicon;
+      [...$.header.parent.querySelectorAll('a')]
+        .filter(a => a.dataset.id !== 'apps' && a.dataset.id !== 'sidebar')
+        .forEach(a => a.remove());
+      bookmarks.bar().then(entries => entries
+        // filter folders
+        .filter(e => !e.children)
+        .filter(e => e.url.indexOf('://') !== -1)
+        .forEach(e => {
+          console.log(e);
+          bookmarks.add(e);
+        }));
+    });
   },
   insert: ({id, title, url}) => new Promise(resolve => {
     chrome.bookmarks.create({
@@ -87,7 +84,8 @@ var bookmarks = {
   })
 };
 
-/*var topSites = {
+/*
+var topSites = {
   list: () => {
     return new Promise(resolve => {
       chrome.topSites.get(resolve);
@@ -104,46 +102,71 @@ var bookmarks = {
     parent.appendChild(node);
     return node;
   }
-};*/
+};
+*/
 
-(function(url, img) {
-  bing.insert(img || chrome.runtime.getURL('data/override/default.jpg'));
-  bing.url('en-US').then(u => {
-    if (u !== url) {
-      const req = new XMLHttpRequest();
-      req.open('GET', u);
-      req.responseType = 'blob';
-      req.onload = () => {
-        const fileReader = new FileReader();
-        fileReader.onload = ({target}) => {
-          const dataURL = target.result;
-          localStorage.setItem('image', dataURL);
-          bing.insert(dataURL);
-          cookie.set('url', u);
+const start = () => chrome.storage.local.get({
+  'custom-bg': false,
+  'custom-image': ''
+}, prefs => {
+  if (prefs['custom-bg'] && prefs['custom-image']) {
+    bing.insert(prefs['custom-image']);
+  }
+  else {
+    bing.insert(localStorage.getItem('image') || chrome.runtime.getURL('data/override/default.jpg'));
+    bing.url('en-US').then(u => {
+      if (u !== cookie.get('url')) {
+        const req = new XMLHttpRequest();
+        req.open('GET', u);
+        req.responseType = 'blob';
+        req.onload = () => {
+          const fileReader = new FileReader();
+          fileReader.onload = ({target}) => {
+            const dataURL = target.result;
+            localStorage.setItem('image', dataURL);
+            bing.insert(dataURL);
+            cookie.set('url', u);
+          };
+          fileReader.readAsDataURL(req.response);
         };
-        fileReader.readAsDataURL(req.response);
-      };
-      req.send();
-    }
-  });
-})(cookie.get('url'), localStorage.getItem('image'));
+        req.send();
+      }
+    });
+  }
+});
+start();
+chrome.storage.onChanged.addListener(ps => {
+  if (ps['custom-bg'] || ps['custom-image']) {
+    start();
+  }
+});
 
-/*topSites.list().then(entries => {
+/*
+topSites.list().then(entries => {
   entries.forEach(topSites.add);
-});*/
+});
+*/
 bookmarks.build();
 
 function update() {
-  const td = s => ('00' + s).substr(-2);
+  const td = s => s.toString().padStart(2, '0');
 
-  const now = new Date();
-  $.time.textContent = `${td(now.getHours())}.${td(now.getMinutes())}.${td(now.getSeconds())}`;
-  $.date.textContent =
-    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][now.getDay()] +
-    ', ' +
-    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()] +
-    ' ' +
-    td(now.getDate());
+  chrome.storage.local.get({
+    'time-format': 'hh:mm:ss',
+    'date-format': 'full'
+  }, prefs => {
+    const now = new Date();
+    const dlist = ['full', 'long', 'medium', 'short'];
+    const n = Math.max(0, dlist.indexOf(prefs['date-format']));
+
+    $.time.textContent = prefs['time-format']
+      .replace('hh', td(now.getHours()))
+      .replace('mm', td(now.getMinutes()))
+      .replace('ss', td(now.getSeconds()));
+    $.date.textContent = new Intl.DateTimeFormat(navigator.locale, {
+      dateStyle: dlist[n]
+    }).format(now);
+  });
 }
 update();
 {
@@ -174,26 +197,17 @@ $.header.parent.addEventListener('drop', e => {
   e.preventDefault();
 
   const url = e.dataTransfer.getData('text/uri-list');
-  bookmarks.insert({
-    title: url,
-    url
-  }).then(node => {
-    bookmarks.build();
-    chrome.runtime.sendMessage({
-      method: 'get-title',
+  if (url) {
+    const title = prompt('Bookmark Title', url);
+    bookmarks.insert({
+      title,
       url
-    }, title => {
-      if (title) {
-        chrome.bookmarks.update(node.id, {
-          title
-        }, bookmarks.build);
-      }
-    });
-  });
+    }).then(bookmarks.build);
+  }
 });
 
 // Context Menu
-var contextmenu;
+let contextmenu;
 document.addEventListener('contextmenu', e => {
   contextmenu = e.target;
 });

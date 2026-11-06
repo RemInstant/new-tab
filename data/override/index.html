@@ -7,23 +7,29 @@
     <link rel="stylesheet" href="index.css">
   </head>
   <body vbox>
-    <header hbox>
-      <a href="chrome://apps/" hbox align=center class="chrome" data-id="apps">
-        <img src="apps.svg" width="16" height="16">
-        <span>Apps</span>
-      </a>
+    <header>
+      <div>
+        <a href="chrome://apps/" hbox align=center class="chrome" data-id="apps">
+          <img src="apps.svg" width="16" height="16">
+          <span>Apps</span>
+        </a>
+      </div>
       <template>
         <a href="" hbox align=center>
           <img src="web.svg" width="16" height="16">
           <span>-</span>
         </a>
       </template>
-      <span data-id="spacer" flex="1"></span>
-      <a data-id="sidebar"><span>☰</span></a>
+      <a data-id="sidebar">
+        <svg viewBox="0 0 24 24" width="24">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/>
+        </svg>
+      </a>
     </header>
     <div id="body" flex="1" vbox pack="center" align="center">
       <div class="grid" vbox>
-        <span id="time">--.--.--</span>
+        <span id="time">--:--:--</span>
         <span id="date">Tue, Apr, 18</span>
       </div>
     </div>
@@ -104,27 +110,27 @@
       </table>
       <h3>Custom CSS</h3>
       <textarea id="userstyle" rows="10" placeholder="This CSS code can be used to alter the start's page user interface. You can alter almost anything, from the background image to the font-size"></textarea>
-      <h3>Favicon</h3>
-      <table width=100%>
-        <colgroup>
-          <col width="22">
-          <col>
-        </colgroup>
-        <tr>
-          <td><input type="checkbox" id="favicon"></td>
-          <td><label for=favicon>Use Google S2 favicon service to resolve icons (Firefox only)</label></td>
-        </tr>
-      </table>
+      <h3>Date and Time</h3>
+      <div class="two">
+        <label for="time-format" class="nowrap">Time Format</label>
+        <input type="text" id="time-format" placeholder="hh:mm:ss">
+        <label for="date-format" class="nowrap">Date Format</label>
+        <input type="text" id="date-format" placeholder="full, long, medium, short">
+      </div>
+      <h3>Custom Background</h3>
+      <div class="two">
+        <input type="checkbox" id="custom-bg">
+        <label for="custom-bg">Click <label for=image><b>here</b></label> to update</label>
+      </div>
+      <input type="file" id="image" accept="image/*">
+
       <div flex=1></div>
-      <p>
+      <p class="two">
+        <input type="button" value="Support Development" id="support">
         <span id="status"></span>
-        <br>
-        <input type="button" value="Support Dev" id="support">
-        <br>
         <input type="button" value="Reset" id="reset">
         <input type="button" value="Save" id="save">
       </p>
-
     </div>
     <script src="index.js"></script>
     <script src="sidebar/index.js"></script>

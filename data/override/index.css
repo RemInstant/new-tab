@@ -1,0 +1,242 @@
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-image: url('default.jpg');
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 13px;
+}
+h3 {
+  font-weight: normal;
+  padding: 5px;
+  margin: 10px 0;
+  background-color: rgba(37, 37, 37, 0.1);
+}
+textarea,
+input {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 11px;
+}
+header {
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  grid-gap: 5px;
+  padding: 5px;
+}
+header > div {
+  display: flex;
+  gap: 5px;
+  overflow: hidden;
+  align-items: center;
+}
+
+
+@container (max-width: 49px) {
+  span {
+    color: red;
+  }
+}
+
+header > div > a {
+  min-width: 48px;
+}
+
+header > a,
+header > div > a {
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+header > a,
+header > div > a,
+header > div > a:visited {
+  color: whitesmoke;
+  fill: whitesmoke;
+}
+header > div > a,
+header > div > a:visited {
+  padding: 2px;
+  background-color: rgba(37, 37, 37, 0.4);
+}
+header > div > a:hover {
+  background-color: rgba(37, 37, 37, 0.6);
+}
+header > div > a img {
+  margin-right: 2px;
+  min-width: 16px;
+  padding: 5px;
+}
+header > div > a span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-inline-end: 5px;
+}
+header [data-id=sidebar] {
+  font-size: 200%;
+  padding: 0 5px;
+}
+td {
+  vertical-align: top;
+}
+label > b {
+  cursor: pointer;
+}
+input[type=file] {
+  display: none;
+}
+
+.grid {
+  background-color: rgba(37, 37, 37, 0.4);
+  padding: 30px;
+  color: whitesmoke;
+}
+.two {
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  grid-gap: 5px;
+  align-items: center;
+}
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#search {
+  display: none;
+}
+#search input {
+  border: none;
+  width: 50vw;
+  outline: none;
+  background-color: rgba(37, 37, 37, 0.4);
+  height: 32px;
+  vertical-align: top;
+  border-radius: 2px;
+  text-indent: 5px;
+}
+#search input:focus {
+  background-color: whitesmoke;
+}
+#search img {
+  cursor: pointer;
+}
+
+#time {
+  font: 60px monospace;
+}
+#date {
+  font: 20px monospace;
+}
+
+#weather {
+  font: 20px monospace;
+  margin-top: 10px;
+}
+#weather[data-visible=false] {
+  opacity: 0;
+}
+#weather i {
+  margin-right: 10px;
+}
+#weather a {
+  text-decoration: none;
+  color: inherit;
+}
+
+#sidebar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 300px;
+  background-color: #fff5f5;
+  border-right: solid 1px #ccc;
+  transition-property: transform, opacity;
+  opacity: 0;
+  transform: translateX(100%);
+  padding: 0 10px;
+  overflow-y: auto;
+}
+body[data-ready=true] #sidebar {
+  transition: all 300ms ease;
+}
+#sidebar[data-open=true] {
+  transform: translateX(0);
+  opacity: 1;
+}
+header [data-id=sidebar] * {
+  pointer-events: none;
+  background-color: rgba(37, 37, 37, 0.4);
+  padding: 5px;
+}
+
+#sidebar input[type=button] {
+  color: #444;
+  background-image: linear-gradient(rgb(237, 237, 237), rgb(237, 237, 237) 38%, rgb(222, 222, 222));
+  box-shadow: rgba(0, 0, 0, 0.08) 0 1px 0, rgba(255, 255, 255, 0.75) 0 1px 2px inset;
+  text-shadow: rgb(240, 240, 240) 0 1px 0;
+  border: solid 1px rgba(0, 0, 0, 0.25);
+  padding: 5px 10px;
+}
+#sidebar select,
+#sidebar textarea,
+#sidebar input[type=text] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px;
+  outline: none;
+  border: solid 1px rgba(0, 0, 0, 0.25);
+}
+#sidebar textarea:focus,
+#sidebar input[type=text]:focus {
+  background-color: #e5f8ff;
+}
+#sidebar input[type=checkbox] {
+  margin: 0 2px;
+}
+
+#latitude,
+#longitude {
+  width: 50%;
+}
+
+[hbox] {
+  display: flex;
+  flex-direction: row;
+}
+[vbox] {
+  display: flex;
+  flex-direction: column;
+}
+[inline] {
+  display: inline-flex;
+}
+[pack=center] {
+  justify-content: center;
+}
+[align=center] {
+  align-items: center;
+}
+[flex="1"] {
+  flex: 1;
+}
+.nowrap {
+  white-space: nowrap;
+}
+
+@-moz-document url-prefix() {
+  .chrome {
+    display: none;
+  }
+}
